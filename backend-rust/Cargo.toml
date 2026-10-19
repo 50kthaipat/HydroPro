@@ -15,3 +15,7 @@ tracing = "0.1"
 
 [dev-dependencies]
 tokio-tungstenite = "0.21"
+
+[[bin]]
+name = "hydroflow-backend"
+path = "src/main.rs"
