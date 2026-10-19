@@ -1,4 +1,4 @@
-﻿import { ClientCommand, TelemetryFrame } from '../types/scada';
+import { ClientCommand, TelemetryFrame } from '../types/scada';
 
 export class ScadaWebSocketService {
   private socket: WebSocket | null = null;
@@ -28,14 +28,18 @@ export class ScadaWebSocketService {
     }
   }
 
-  public subscribeTelemetry(cb: (f: TelemetryFrame) => void) {
+  public subscribeTelemetry(cb: (f: TelemetryFrame) => void): () => void {
     this.telemetrySubs.add(cb);
-    return () => this.telemetrySubs.delete(cb);
+    return () => {
+      this.telemetrySubs.delete(cb);
+    };
   }
 
-  public subscribeConnection(cb: (c: boolean) => void) {
+  public subscribeConnection(cb: (c: boolean) => void): () => void {
     this.connSubs.add(cb);
-    return () => this.connSubs.delete(cb);
+    return () => {
+      this.connSubs.delete(cb);
+    };
   }
 }
 
