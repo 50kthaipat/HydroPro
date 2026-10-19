@@ -1,0 +1,31 @@
+# Multi-stage Dockerfile for HydroFlow SCADA Rust Backend
+FROM rust:1.77-slim AS builder
+
+WORKDIR /usr/src/hydroflow
+
+# Cache dependencies
+COPY backend-rust/Cargo.toml ./
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs && echo "pub mod codec;" > src/lib.rs
+RUN cargo build --release || true
+RUN rm -rf src
+
+# Copy backend source and compile
+COPY backend-rust/ .
+RUN cargo build --release
+RUN if [ -f target/release/hydroflow-backend ]; then cp target/release/hydroflow-backend target/release/server; elif [ -f target/release/hydroflow-core ]; then cp target/release/hydroflow-core target/release/server; fi
+
+# Runtime stage
+FROM debian:bookworm-slim AS runner
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/src/hydroflow/target/release/server* /app/
+
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV SIMULATION_MODE=true
+
+EXPOSE 8080
+
+CMD ["sh", "-c", "exec $(find /app -maxdepth 1 -type f -executable | head -n 1)"]
