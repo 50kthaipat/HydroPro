@@ -1,6 +1,5 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { TelemetryFrame } from '../types/scada';
-import { scadaWs } from '../services/websocket';
 
 export const AlarmBanner: React.FC<{ telemetry: TelemetryFrame | null }> = ({ telemetry }) => {
   const [ack, setAck] = useState(false);
