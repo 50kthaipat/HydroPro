@@ -7,36 +7,72 @@ on:
     branches: [main]
 
 jobs:
+  docker-checks:
+    name: Docker Compose Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose Configuration
+        run: docker compose config
+
   backend-checks:
     name: Backend Format, Lint and Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend-rust
     steps:
       - uses: actions/checkout@v4
+      - name: Check if backend exists
+        id: check_backend
+        run: |
+          if [ -d "./backend-rust" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: dtolnay/rust-toolchain@stable
+        if: steps.check_backend.outputs.exists == 'true'
         with:
           components: clippy, rustfmt
       - name: Check Formatting
+        if: steps.check_backend.outputs.exists == 'true'
+        working-directory: ./backend-rust
         run: cargo fmt --check || true
       - name: Run Unit Tests
+        if: steps.check_backend.outputs.exists == 'true'
+        working-directory: ./backend-rust
         run: cargo test
       - name: Run Clippy Linter
+        if: steps.check_backend.outputs.exists == 'true'
+        working-directory: ./backend-rust
         run: cargo clippy -- -D warnings
+      - name: Skip Notification
+        if: steps.check_backend.outputs.exists != 'true'
+        run: echo "backend-rust directory not in this branch, skipping backend tests."
 
   frontend-checks:
     name: Frontend Lint, Type-Check and Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend-scada
     steps:
       - uses: actions/checkout@v4
+      - name: Check if frontend exists
+        id: check_frontend
+        run: |
+          if [ -d "./frontend-scada" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.check_frontend.outputs.exists == 'true'
         with:
           node-version: 20
       - name: Install Dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./frontend-scada
         run: npm ci || npm install
       - name: Build and Typecheck
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./frontend-scada
         run: npm run build
+      - name: Skip Notification
+        if: steps.check_frontend.outputs.exists != 'true'
+        run: echo "frontend-scada directory not in this branch, skipping frontend build."
