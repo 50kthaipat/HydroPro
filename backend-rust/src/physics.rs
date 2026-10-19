@@ -1,4 +1,4 @@
-﻿#[derive(Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct PhysicsConfig {
     pub gravity: f32,
     pub fluid_density: f32,
@@ -61,7 +61,8 @@ pub struct TwoTankModel {
     valve_position: f32,
 }
 
-impl TwoTankModel {m    pub fn new(config: PhysicsConfig) -> Self {
+impl TwoTankModel {
+    pub fn new(config: PhysicsConfig) -> Self {
         Self {
             config,
             state: PhysicsState::default(),

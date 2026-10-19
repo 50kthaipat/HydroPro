@@ -1,4 +1,4 @@
-﻿use async_trait::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::Mutex;

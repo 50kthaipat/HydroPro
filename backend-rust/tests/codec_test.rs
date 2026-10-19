@@ -1,4 +1,4 @@
-﻿use hydroflow_core::codec::Db1Raw;
+use hydroflow_core::codec::Db1Raw;
 
 #[test]
 fn test_db1_memory_size() {
