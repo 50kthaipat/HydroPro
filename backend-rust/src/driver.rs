@@ -41,6 +41,12 @@ struct Inner {
 #[derive(Clone)]
 pub struct MockDriver { inner: Arc<Mutex<Inner>> }
 
+impl Default for MockDriver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockDriver {
     pub fn new() -> Self {
         Self {
