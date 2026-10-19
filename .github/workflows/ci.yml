@@ -76,3 +76,33 @@ jobs:
       - name: Skip Notification
         if: steps.check_frontend.outputs.exists != 'true'
         run: echo "frontend-scada directory not in this branch, skipping frontend build."
+
+  playwright-e2e-checks:
+    name: Playwright E2E UI Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if frontend exists
+        id: check_frontend
+        run: |
+          if [ -d "./frontend-scada" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.check_frontend.outputs.exists == 'true'
+        with:
+          node-version: 20
+      - name: Install Dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./frontend-scada
+        run: npm ci || npm install
+      - name: Install Playwright Browsers
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./frontend-scada
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright Tests
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./frontend-scada
+        run: npx playwright test
